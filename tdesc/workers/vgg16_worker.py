@@ -5,12 +5,12 @@
 """
 
 import sys
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import contextlib
-import cStringIO
+import io
 import numpy as np
 
-from base import BaseWorker
+from .base import BaseWorker
 
 
 def limit_mem():
@@ -54,15 +54,15 @@ class VGG16Worker(BaseWorker):
         self.crow = crow
         
         self._warmup()
-        print >> sys.stderr, 'VGG16Worker: ready'
+        print('VGG16Worker: ready', file=sys.stderr)
         
     def _warmup(self):
         _ = self.model.predict(np.zeros((1, self.target_dim, self.target_dim, 3)))
         
     def imread(self, path):
         if 'http' == path[:4]:
-            with contextlib.closing(urllib.urlopen(path)) as req:
-                local_url = cStringIO.StringIO(req.read())
+            with contextlib.closing(urllib.request.urlopen(path)) as req:
+                local_url = io.StringIO(req.read())
             img = image.load_img(local_url, target_size=(self.target_dim, self.target_dim))
         else:
             img = image.load_img(path, target_size=(self.target_dim, self.target_dim))
@@ -78,11 +78,11 @@ class VGG16Worker(BaseWorker):
             feat = feat.sum(axis=(0, 1))
             
         if not return_feat:
-            print '\t'.join((path, '\t'.join(map(str, feat))))
+            print('\t'.join((path, '\t'.join(map(str, feat)))))
             sys.stdout.flush()
         else:
             return path, feat
             
     def close(self):
-        print >> sys.stderr, 'VGG16Worker: terminating'
+        print('VGG16Worker: terminating', file=sys.stderr)
         pass

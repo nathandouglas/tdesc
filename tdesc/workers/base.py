@@ -30,16 +30,16 @@ class BaseWorker(object):
                     yield self.featurize(*obj)
                     
                     if not i % self.print_interval:
-                        print >> sys.stderr, json.dumps({
+                        print(json.dumps({
                             "i" : i,
                             "time" : time() - start_time,
-                        })
+                        }), file=sys.stderr)
             
         self.close()
         
     def _chunker(self, iterable, chunk_size):
         while True:
-            yield itertools.chain([iterable.next()], itertools.islice(iterable, chunk_size-1))
+            yield itertools.chain([next(iterable)], itertools.islice(iterable, chunk_size-1))
     
     def do_io(self, req):
         try:

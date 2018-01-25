@@ -5,13 +5,13 @@
 """
 
 import sys
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import contextlib
-import cStringIO
+import io
 import numpy as np
 from PIL import Image
 
-from base import BaseWorker
+from .base import BaseWorker
 
 
 def import_yolo():
@@ -38,12 +38,12 @@ class YoloWorker(BaseWorker):
         self.target_dim = target_dim
         self.class_names = open(name_path).read().splitlines()
         self.det = DarknetObjectDetector(cfg_path, weight_path, thresh, nms, 0)
-        print >> sys.stderr, 'YoloWorker: ready'
+        print('YoloWorker: ready', file=sys.stderr)
 
     def imread(self, path):
         if path[:4] == 'http':
-            with contextlib.closing(urllib.urlopen(path)) as req:
-                path = cStringIO.StringIO(req.read())
+            with contextlib.closing(urllib.request.urlopen(path)) as req:
+                path = io.StringIO(req.read())
         img = Image.open(path).convert('RGB')
         img = img.resize((self.target_dim, self.target_dim), Image.BILINEAR)
 
@@ -57,7 +57,7 @@ class YoloWorker(BaseWorker):
         for bbox in bboxes:
             class_name = self.class_names[bbox.cls]
             if not return_feat:
-                print '\t'.join(map(str, [
+                print('\t'.join(map(str, [
                     meta,
                     class_name,
                     bbox.confidence,
@@ -65,7 +65,7 @@ class YoloWorker(BaseWorker):
                     bbox.bottom,
                     bbox.left,
                     bbox.right
-                ]))
+                ])))
                 sys.stdout.flush()
             else:
                 feats.append({
@@ -78,5 +78,5 @@ class YoloWorker(BaseWorker):
             return meta, feats
 
     def close(self):
-        print >> sys.stderr, 'YoloWorker: terminating'
+        print('YoloWorker: terminating', file=sys.stderr)
         pass
