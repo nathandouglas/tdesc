@@ -9,11 +9,11 @@ import sys
 import argparse
 import numpy as np
 
-import urllib
-import cStringIO
+import urllib.request, urllib.parse, urllib.error
+import io
 from time import time
 
-from workers import VGG16Worker, DlibFaceWorker
+from .workers import VGG16Worker, DlibFaceWorker
 
 # --
 # Init
@@ -48,7 +48,7 @@ if __name__ == "__main__":
             worker.featurize(path, worker.imread(path))
             
             if not (i + 1) % 100:
-                print >> sys.stderr, "%d images | %f seconds " % (i, time() - start_time)
+                print("%d images | %f seconds " % (i, time() - start_time), file=sys.stderr)
             
         except KeyboardInterrupt:
             raise
@@ -57,4 +57,4 @@ if __name__ == "__main__":
             raise e
             os._exit(0)
     
-    print >> sys.stderr, "%d images | %f seconds " % (i, time() - start_time)
+    print("%d images | %f seconds " % (i, time() - start_time), file=sys.stderr)

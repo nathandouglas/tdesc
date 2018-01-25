@@ -7,7 +7,7 @@
 import sys
 import numpy as np
 import dlib
-from dlib_worker import DlibFaceWorker
+from .dlib_worker import DlibFaceWorker
 
 
 class DlibFaceBatchWorker(DlibFaceWorker):
@@ -23,7 +23,7 @@ class DlibFaceBatchWorker(DlibFaceWorker):
         self.path_buffer = []
         self.img_buffer = []
 
-        print >> sys.stderr, 'DlibFaceBatchWorker: ready (dnn=%d | num_jitters=%d)' % (1, int(num_jitters))
+        print('DlibFaceBatchWorker: ready (dnn=%d | num_jitters=%d)' % (1, int(num_jitters)), file=sys.stderr)
 
     def featurize(self, path, obj, return_feat=False):
         img, _ = obj
@@ -35,7 +35,7 @@ class DlibFaceBatchWorker(DlibFaceWorker):
             self._featurize()
 
     def _featurize(self):
-        all_dets, _ = zip(*self.detector(self.img_buffer))
+        all_dets, _ = list(zip(*self.detector(self.img_buffer)))
 
         all_shapes = []
         for img, dets in zip(self.img_buffer, all_dets):
@@ -47,12 +47,12 @@ class DlibFaceBatchWorker(DlibFaceWorker):
         for path, dets in zip(self.path_buffer, all_dets):
             for ind, det in enumerate(dets):
                 face_descriptor = all_face_descriptors[i]
-                print '\t'.join((
+                print('\t'.join((
                     path,
                     str(ind),
                     '\t'.join(map(str, [det.top(), det.bottom(), det.left(), det.right()])),
                     '\t'.join(map(str, face_descriptor))
-                ))
+                )))
                 sys.stdout.flush()
                 i += 1
 
@@ -62,4 +62,4 @@ class DlibFaceBatchWorker(DlibFaceWorker):
     def close(self):
         if len(self.path_buffer) > 0:
             self._featurize()
-        print >> sys.stderr, 'DlibFaceBatchWorker: terminating'
+        print('DlibFaceBatchWorker: terminating', file=sys.stderr)

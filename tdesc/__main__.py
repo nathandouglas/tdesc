@@ -76,7 +76,7 @@ if __name__ == "__main__":
             "nms" : args.yolo_nms,
         })
     else:
-        print >> sys.stderr, "tdesc: Unknown model=%s" % args.model
+        print("tdesc: Unknown model=%s" % args.model, file=sys.stderr)
         raise Exception()
     
     for w in worker.run(io_threads=args.io_threads, timeout=args.timeout):

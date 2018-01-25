@@ -61,12 +61,12 @@ def do_work(path, outdir, best_face=False, size=150, padding=0.25, threshold=0.0
             
             fa.save(img, rect, os.path.join(dirname, fname), size=size, padding=padding)
             
-            print '\t'.join((
+            print('\t'.join((
                 path, 
                 str(k),
                 '\t'.join(map(str, [rect.top(),rect.bottom(),rect.left(),rect.right()])), 
                 str(conf)
-            ))
+            )))
             sys.stdout.flush()
             
             if best_face:
@@ -74,7 +74,7 @@ def do_work(path, outdir, best_face=False, size=150, padding=0.25, threshold=0.0
     except KeyboardInterrupt:
         raise
     except:
-        print >> sys.stderr, "do_work: error at %s" % path
+        print("do_work: error at %s" % path, file=sys.stderr)
     
     return path
 
@@ -102,5 +102,5 @@ if __name__ == "__main__":
         for r in res:
             i += 1
             if not i % print_interval:
-                print >> sys.stderr, "%d images | %f seconds " % (i, time() - start_time)
+                print("%d images | %f seconds " % (i, time() - start_time), file=sys.stderr)
             sys.stdout.flush()
