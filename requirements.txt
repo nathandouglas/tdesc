@@ -1,2 +1,6 @@
 keras
 futures
+scikit-image
+tensorflow-gpu
+pytest
+ipdb
