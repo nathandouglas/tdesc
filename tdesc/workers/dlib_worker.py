@@ -7,31 +7,21 @@
 
     !! Could do a better job w/ batching
 """
-
+import dlib
 import os
 import sys
 
+from skimage import io
+from skimage import color
+
 from .base import BaseWorker
-
-
-def import_dlib():
-    global dlib
-    global h5py
-    global io
-    global color
-    import dlib
-    from skimage import io
-    from skimage import color
 
 
 class DlibFaceWorker(BaseWorker):
     """
         compute dlib face descriptors
     """
-
     def __init__(self, num_jitters=10, dnn=False, det_threshold=0.0, upsample=0):
-        import_dlib()
-
         ppath = os.path.join(os.environ['HOME'], '.tdesc')
 
         if not dnn:
