@@ -42,6 +42,8 @@ class BaseWorker(object):
             yield itertools.chain([next(iterable)], itertools.islice(iterable, chunk_size-1))
 
     def do_io(self, image_artifact):
+        results = []
+
         try:
             results = self.imread(image_artifact.filepath)
         except OSError:
