@@ -19,7 +19,7 @@ class ImageArtifact(object):
     Data structure used to communicate between
     Image analytics, and application layer.
     """
-    def __init__(self, id, filepath):
+    def __init__(self, id, filepath, *args, **kwargs):
         self.id = id
         self.filepath = filepath
         self.db = self._create_db()
@@ -45,7 +45,7 @@ class ImageArtifact(object):
         raise NotImplementedError
 
     @classmethod
-    def from_dict(cls, dic):
+    def from_dict(cls, dic, *args, **kwargs):
         """Return an ImageArtifact from dict
 
         Method assumes dict to have the following
@@ -63,7 +63,7 @@ class ImageArtifact(object):
         Returns:
             ImageArtifact
         """
-        return cls(dic['_id'], dic['filepath'])
+        return cls(dic['_id'], dic['filepath'], *args, **kwargs)
 
     def to_dict(self):
         """Returns dict representation of class."""
