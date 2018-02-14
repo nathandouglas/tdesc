@@ -8,10 +8,19 @@ import os
 import h5py
 import json
 
+from datetime import datetime
+
 
 class Feature(object):
+    def __init__(self, error='', *args, **kwargs):
+        self.created = datetime.utcnow()
+        self.error = error
+
     def to_dict(self):
-        raise NotImplementedError
+        return {
+            "created": str(self.created),
+            "error": self.error
+        }
 
 class ImageArtifact(object):
     """ImageArtifact class.

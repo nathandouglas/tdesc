@@ -3,10 +3,10 @@
 """
     vgg16_worker.py
 """
-
 import contextlib
 import io
 import logging
+import os
 import numpy as np
 import sys
 import urllib.request, urllib.parse, urllib.error
@@ -51,8 +51,12 @@ class VGG16Worker(BaseWorker):
     def _limit_mem(self):
         cfg = K.tf.ConfigProto()
         cfg.gpu_options.allow_growth = True
-        cfg.gpu_options.visible_device_list="0"
-        K.set_session(K.tf.Session(config=cfg))
+        cfg.gpu_options.visible_device_list = os.environ.get('GPU_DEV', '0')
+        cfg.per_process_gpu_memory_fraction = float(os.environ.get('GPU_MEMORY_FRACTION', '0.1'))
+
+        self.sess = K.tf.Session(config=cfg)
+
+        K.set_session(self.sess)
 
     def _warmup(self):
         _ = self.model.predict(np.zeros((1, self.target_dim, self.target_dim, 3)))
