@@ -13,7 +13,7 @@ import urllib.request, urllib.parse, urllib.error
 
 from keras                    import backend as K
 from keras.applications       import VGG16
-from keras.models             import Model
+from keras.models             import Model, load_model
 from keras.preprocessing      import image
 from keras.applications.vgg16 import preprocess_input
 
@@ -26,27 +26,37 @@ class VGG16Worker(BaseWorker):
 
         either densely connected (default) or crow (sum-pooled conv5)
     """
-    def __init__(self, crow, target_dim=224, logger=None):
+    def __init__(self, crow, target_dim=224, logger=None, model_path=None):
+
         if K.backend() == 'tensorflow':
             self._limit_mem()
 
-        if crow:
-            self.model = VGG16(weights='imagenet', include_top=False)
-        else:
-            whole_model = VGG16(weights='imagenet', include_top=True)
-            self.model = Model(inputs=whole_model.input, outputs=whole_model.get_layer('fc2').output)
-
-        self.target_dim = target_dim
         self.crow = crow
-
+        self.model_path = model_path
+        self.model = self._get_model()
+        self.target_dim = target_dim
         self._warmup()
-
         self.logger = logger or logging
 
         if self.logger:
             self.logger.info(
                 'VGG16Worker: ready (target_dim=%d)' % ( int(target_dim) )
             )
+
+    def _get_model(self):
+        model = None
+
+        if self.crow:
+            model = VGG16(weights='imagenet', include_top=False)
+
+        elif self.model_path:
+            model = load_model(self.model_path)
+
+        else:
+            whole_model = VGG16(weights='imagenet', include_top=True)
+            model = Model(inputs=whole_model.input, outputs=whole_model.get_layer('fc2').output)
+
+        return model
 
     def _limit_mem(self):
         cfg = K.tf.ConfigProto()
@@ -59,7 +69,7 @@ class VGG16Worker(BaseWorker):
         K.set_session(self.sess)
 
     def _warmup(self):
-        _ = self.model.predict(np.zeros((1, self.target_dim, self.target_dim, 3)))
+        self.model.predict(np.zeros((1, self.target_dim, self.target_dim, 3)))
 
     def imread(self, path):
         if 'http' == path[:4]:
