@@ -38,7 +38,7 @@ ENV PATH=/root/.anaconda/bin:$PATH
 RUN conda install -qy anaconda
 RUN conda install -qy boost=1.61.0
 RUN conda install -qy opencv
-RUN conda install -qy menpo 
+RUN conda install -qy menpo menpo
 RUN conda install -qy h5py
 RUN conda install -qy cmake
 
