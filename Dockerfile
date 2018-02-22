@@ -59,6 +59,8 @@ RUN git clone https://github.com/bkj/darknet && \
     cmake .. && \
     make all -j8
 
+ENV PYTHONPATH /darknet/pyDarknet:$PYTHONPATH
+
 #############################
 # Create placeholder
 # Models will be 
