@@ -77,3 +77,38 @@ class ImageArtifact(object):
     def to_dict(self):
         """Returns dict representation of class."""
         return {"_id": self.id, "filepath": filepath}
+
+
+class YoloFeature(Feature):
+    def __init__(self, class_name, confidence, bbox, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.class_name = class_name
+        self.confidence = confidence
+        self.bbox = bbox
+
+    def to_dict(self):
+        base = super().to_dict()
+
+        base.update({
+            "class_name": self.class_name,
+            "confidence": self.bbox.confidence,
+            "bbox": self.bbox
+        })
+
+        return base
+
+
+class YoloArtifact(ImageArtifact):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.features = []
+
+    def _create_db(self):
+        return None
+
+    def to_dict(self):
+        return {
+            "_id": self.id,
+            "yolo": [yf.to_dict() for yf in self.features]
+        }

@@ -35,7 +35,7 @@ ENV PATH=/root/.anaconda/bin:$PATH
 #############################
 # Install Conda Packages
 #############################
-RUN conda install -qyc anaconda boost=1.61.0
+RUN conda install -qyc anaconda boost=1.61.0 opencv
 RUN conda install -qyc menpo menpo 
 RUN conda install -qy h5py
 RUN conda install -qy cmake
@@ -47,6 +47,15 @@ ENV DLIB_BUILD_ARGS=${dlib_build_args:-"--no DLIB_USE_CUDA"}
 
 RUN git clone https://github.com/davisking/dlib.git
 RUN cd dlib && python setup.py install ${DLIB_BUILD_ARGS}
+
+
+####################################################
+# Install darknet
+####################################################
+RUN git clone https://github.com/bkj/darknet && \
+    cd darknet && mkdir build && cd build && \
+    cmake .. && \
+    make all -j8
 
 #############################
 # Create placeholder
