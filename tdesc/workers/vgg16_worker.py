@@ -61,7 +61,7 @@ class VGG16Worker(BaseWorker):
     def _limit_mem(self):
         cfg = K.tf.ConfigProto()
         cfg.gpu_options.allow_growth = True
-        cfg.gpu_options.visible_device_list = os.environ.get('GPU_DEV', '0')
+        # cfg.gpu_options.visible_device_list = os.environ.get('GPU_DEV', '0')
         cfg.gpu_options.per_process_gpu_memory_fraction = float(os.environ.get('GPU_MEMORY_FRACTION', '0.1'))
 
         self.sess = K.tf.Session(config=cfg)
