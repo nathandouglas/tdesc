@@ -1,4 +1,4 @@
-FROM nvidia/cuda:8.0-cudnn6-devel
+FROM nvidia/cuda:9.0-cudnn7-devel
 
 MAINTAINER Nathan Douglas
 
@@ -75,6 +75,7 @@ RUN mkdir -p $HOME/.keras/models
 COPY requirements.txt .
 
 RUN pip install -r requirements.txt
+RUN pip install --upgrade numpy
 
 COPY . /tdesc
 

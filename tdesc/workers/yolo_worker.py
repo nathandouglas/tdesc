@@ -3,12 +3,14 @@
 """
     yolo_worker.py
 """
-
 import sys
 import urllib.request, urllib.parse, urllib.error
 import contextlib
 import io
 import numpy as np
+import os
+import logging
+
 from PIL import Image
 
 from .base import BaseWorker
@@ -27,14 +29,21 @@ class DetBBox(object):
 
 class YoloWorker(BaseWorker):
 
-    def __init__(self, cfg_path, weight_path, name_path, thresh=0.1, nms=0.3, target_dim=416):
+    def __init__(self, cfg_path, weight_path, name_path,
+                 thresh=0.1, nms=0.3, target_dim=416,
+                 logger=None, *args, **kwargs):
         self._import_yolo()
 
-        DarknetObjectDetector.set_device(0)
+        self.logger = logger or logging
+
+        DarknetObjectDetector.set_device(int(os.environ.get("CUDA_VISIBLE_DEVICES", "")))
         self.target_dim = target_dim
         self.class_names = open(name_path).read().splitlines()
         self.det = DarknetObjectDetector(cfg_path, weight_path, thresh, nms, 0)
         print('YoloWorker: ready', file=sys.stderr)
+
+    def _detection_message(self, yolo_artifact):
+        return "Yolo Objects Detected: {}".format(yolo_artifact.filepath)
 
     def _import_yolo(self):
         global DarknetObjectDetector
@@ -57,7 +66,11 @@ class YoloWorker(BaseWorker):
 
         data, size = obj
 
-        bboxes = [DetBBox(x) for x in self.det.detect_object(data, size[0], size[1], 3).content]
+        bboxes = [
+            DetBBox(x)
+            for x in self.det.detect_object(str(data), size[0], size[1], 3).content
+        ]
+
         feats = []
 
         for bbox in bboxes:
