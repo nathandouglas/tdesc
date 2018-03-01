@@ -4,8 +4,6 @@
     yolo_worker.py
 """
 import sys
-import urllib.request, urllib.parse, urllib.error
-import contextlib
 import io
 import numpy as np
 import os
@@ -14,6 +12,12 @@ import logging
 from PIL import Image
 
 from .base import BaseWorker
+from tdesc.artifacts import YoloFeature
+
+
+def _import_yolo():
+    global DarknetObjectDetector
+    from libpydarknet import DarknetObjectDetector
 
 
 class DetBBox(object):
@@ -32,31 +36,26 @@ class YoloWorker(BaseWorker):
     def __init__(self, cfg_path, weight_path, name_path,
                  thresh=0.1, nms=0.3, target_dim=416,
                  logger=None, *args, **kwargs):
-        self._import_yolo()
+        _import_yolo()
 
         self.logger = logger or logging
 
         DarknetObjectDetector.set_device(int(os.environ.get("CUDA_VISIBLE_DEVICES", "")))
+
         self.target_dim = target_dim
         self.class_names = open(name_path).read().splitlines()
         self.det = DarknetObjectDetector(cfg_path, weight_path, thresh, nms, 0)
-        print('YoloWorker: ready', file=sys.stderr)
+
+        self.logger.debug('YoloWorker: ready')
 
     def _detection_message(self, yolo_artifact):
         return "Yolo Objects Detected: {}".format(yolo_artifact.filepath)
 
-    def _import_yolo(self):
-        global DarknetObjectDetector
-        from libpydarknet import DarknetObjectDetector
-
     def imread(self, path):
-
-        if path[:4] == 'http':
-            with contextlib.closing(urllib.request.urlopen(path)) as req:
-                path = io.StringIO(req.read())
 
         img = Image.open(path).convert('RGB')
         img = img.resize((self.target_dim, self.target_dim), Image.BILINEAR)
+
 
         data = np.array(img).transpose([2,0,1]).astype(np.uint8).tostring()
 

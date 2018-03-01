@@ -46,7 +46,7 @@ class BaseWorker(object):
 
         try:
             results = self.imread(image_artifact.filepath)
-        except OSError:
+        except Exception as e:
             self.logger.error('Failed to read {}'.format(image_artifact.filepath))
             pass
 

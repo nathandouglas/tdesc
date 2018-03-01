@@ -9,15 +9,26 @@ import logging
 import os
 import numpy as np
 import sys
-import urllib.request, urllib.parse, urllib.error
+import urllib
 
-from keras                    import backend as K
-from keras.applications       import VGG16
-from keras.models             import Model, load_model
-from keras.preprocessing      import image
-from keras.applications.vgg16 import preprocess_input
 
 from .base import BaseWorker
+
+
+def import_vgg16():
+    global VGG16
+    global Model
+    global load_model
+    global image
+    global preprocess_input
+    global K
+
+    from keras.applications import VGG16
+    from keras.models import Model, load_model
+    from keras.preprocessing import image
+    from keras.applications.vgg16 import preprocess_input
+
+    from keras import backend as K
 
 
 class VGG16Worker(BaseWorker):
@@ -28,8 +39,14 @@ class VGG16Worker(BaseWorker):
     """
     def __init__(self, crow, target_dim=224, logger=None, model_path=None):
 
+        try:
+            import_vgg16()
+        except Exception as e:
+            # TODO handle non GPU machines
+            assert e == 'a'
+
         if K.backend() == 'tensorflow':
-            self._limit_mem()
+            self._set_session()
 
         self.crow = crow
         self.model_path = model_path
@@ -58,11 +75,16 @@ class VGG16Worker(BaseWorker):
 
         return model
 
-    def _limit_mem(self):
+    def _set_session(self):
+
         cfg = K.tf.ConfigProto()
         cfg.gpu_options.allow_growth = True
+
         # cfg.gpu_options.visible_device_list = os.environ.get('GPU_DEV', '0')
-        cfg.gpu_options.per_process_gpu_memory_fraction = float(os.environ.get('GPU_MEMORY_FRACTION', '0.1'))
+
+        cfg.gpu_options.per_process_gpu_memory_fraction = float(
+            os.environ.get('GPU_MEMORY_FRACTION', '0.1')
+        )
 
         self.sess = K.tf.Session(config=cfg)
 
@@ -72,12 +94,12 @@ class VGG16Worker(BaseWorker):
         self.model.predict(np.zeros((1, self.target_dim, self.target_dim, 3)))
 
     def imread(self, path):
-        if 'http' == path[:4]:
+
+        if path[:4] == 'http':
             with contextlib.closing(urllib.request.urlopen(path)) as req:
-                local_url = io.StringIO(req.read())
-            img = image.load_img(local_url, target_size=(self.target_dim, self.target_dim))
-        else:
-            img = image.load_img(path, target_size=(self.target_dim, self.target_dim))
+                path = io.StringIO(req.read())
+
+        img = image.load_img(path, target_size=(self.target_dim, self.target_dim))
 
         img = image.img_to_array(img)
         img = np.expand_dims(img, axis=0)

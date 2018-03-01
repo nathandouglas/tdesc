@@ -81,17 +81,18 @@ class ImageArtifact(object):
 
 class YoloFeature(Feature):
     def __init__(self, class_name, confidence, bbox, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super(YoloFeature, self).__init__(*args, **kwargs)
+
         self.class_name = class_name
         self.confidence = confidence
         self.bbox = bbox
 
     def to_dict(self):
-        base = super().to_dict()
+        base = super(YoloFeature, self).to_dict()
 
         base.update({
             "class_name": self.class_name,
-            "confidence": self.bbox.confidence,
+            "confidence": self.confidence,
             "bbox": self.bbox
         })
 
@@ -100,7 +101,7 @@ class YoloFeature(Feature):
 
 class YoloArtifact(ImageArtifact):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super(YoloArtifact, self).__init__(*args, **kwargs)
 
         self.features = []
 

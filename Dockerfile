@@ -17,7 +17,7 @@ ENV PYTHONPATH=/usr/src/app:$PYTHONPATH
 # Install Ubuntu Dependencies
 #############################
 RUN apt-get update
-RUN apt-get install -y git python-numpy python-dev python-pip wget locales
+RUN apt-get install -y git python-numpy python-dev python-pip wget locales vim telnet
 
 RUN locale-gen en_US.UTF-8
 ENV LANG en_US.UTF-8
@@ -49,17 +49,6 @@ ENV DLIB_BUILD_ARGS=${dlib_build_args:-"--no DLIB_USE_CUDA"}
 
 RUN git clone https://github.com/davisking/dlib.git
 RUN cd dlib && python setup.py install ${DLIB_BUILD_ARGS}
-
-
-####################################################
-# Install darknet
-####################################################
-RUN git clone https://github.com/bkj/darknet && \
-    cd darknet && mkdir build && cd build && \
-    cmake .. && \
-    make all -j8
-
-ENV PYTHONPATH /darknet/pyDarknet:$PYTHONPATH
 
 #############################
 # Create placeholder
