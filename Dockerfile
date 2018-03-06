@@ -1,4 +1,4 @@
-FROM nvidia/cuda:9.0-cudnn7-devel
+FROM nvidia/cuda:8.0-cudnn6-devel
 
 MAINTAINER Nathan Douglas
 
@@ -50,6 +50,40 @@ ENV DLIB_BUILD_ARGS=${dlib_build_args:-"--no DLIB_USE_CUDA"}
 RUN git clone https://github.com/davisking/dlib.git
 RUN cd dlib && python setup.py install ${DLIB_BUILD_ARGS}
 
+####################################################
+# Install faiss
+####################################################
+RUN apt-get update && \
+    apt-get install -y libopenblas-dev 
+    # apt-get install -y libopenblas-dev python-numpy python-dev swig git python-pip 
+
+RUN pip install matplotlib
+
+RUN cd /opt && git clone https://github.com/nathandouglas/faiss.git
+# COPY . /opt/faiss
+
+WORKDIR /opt/faiss
+
+ENV BLASLDFLAGS /usr/lib/libopenblas.so.0
+
+RUN mv example_makefiles/makefile.inc.Linux ./makefile.inc
+
+# Set the proper flags to build for python3
+RUN sed -i 's|\(PYTHONCFLAGS=\)\(.*$\)|\1-I /root/.anaconda/include/python3.6m -I /root/.anaconda/lib/python3.6/site-packages/numpy/core/include|g' ./makefile.inc
+
+RUN make tests/test_blas -j $(nproc) && \
+    make -j $(nproc) && \
+    make demos/demo_sift1M -j $(nproc) && \
+    make py
+
+RUN cd gpu && \
+    make -j $(nproc) && \
+    make test/demo_ivfpq_indexing_gpu && \
+    make py
+
+ENV PYTHONPATH /opt/faiss:$PYTHONPATH
+
+WORKDIR /
 #############################
 # Create placeholder
 # Models will be 

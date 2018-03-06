@@ -28,10 +28,10 @@ class ImageArtifact(object):
     Data structure used to communicate between
     Image analytics, and application layer.
     """
-    def __init__(self, id, filepath, *args, **kwargs):
+    def __init__(self, id, filepath, save_results=True, *args, **kwargs):
         self.id = id
         self.filepath = filepath
-        self.db = self._create_db()
+        self.db = self._create_db() if save_results else None
         self.image = None
 
     def _create_db(self):
@@ -73,6 +73,15 @@ class ImageArtifact(object):
             ImageArtifact
         """
         return cls(dic['_id'], dic['filepath'], *args, **kwargs)
+
+    def close(self):
+        """Wrapper around h5py.close()
+
+        Not all image artifacts will have an
+        associated H5.
+        """
+        if self.db:
+            self.db.close()
 
     def to_dict(self):
         """Returns dict representation of class."""
